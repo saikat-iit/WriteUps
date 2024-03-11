@@ -90,15 +90,3 @@ pearl{QR_rev0lution1ses_mod3rn_data_handl1ng}
 ```
 
 I hope this explanation is helpful!
-
-**Source Code of Markdown Language**
-
-Markdown is not a programming language, but rather a plain text formatting syntax used to create readable documents. Here's a breakdown of the basic elements used in this example:
-
-* `#` - Heading (level 1)
-* `##` - Heading (level 2)
-* `*` - Bullet point
-* ````python` - Code block (specifies Python code)
-* Inline code (usually surrounded by backticks )
-
-These elements, along with others, allow you to format text, create headings, lists, code blocks, and more within a markdown document.
