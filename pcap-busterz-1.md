@@ -1,78 +1,104 @@
-# [pcap-busterz-1-7](https://pearlctf.in/challenges#pcap-busterz-1-7)
+## Challenge: [pcap-busterz-1-7](https://pearlctf.in/challenges#pcap-busterz-1-7)
 
-First I opened the sus.pcap using Wireshark
+This document outlines the steps I took to solve the "pcap-busterz-1-7" challenge from [PearlCTF](https://pearlctf.in/).
+
+**Initial Analysis**
+
+1. **Examining the Capture File:**
+   I started by opening the `sus.pcap` file using Wireshark, a network protocol analyzer. Inside, I observed a significant number of TCP packets.
+2. **Data Pattern Recognition:**
+   Upon inspecting a few TCP streams, I discovered that all packets contained identical data in the format `x=12,y=45,color=white`. This pattern suggested a potential correlation between `x` and `y` values representing pixel coordinates and `color` indicating the pixel's shade.
+
+**Data Processing and Visualization**
+
+1. **Extracting Data:**
+   I extracted the data from the capture file and saved it in a text file named `data.txt`. Each line in `data.txt` followed the format `(12,45,white)`, representing a pixel's coordinates and color.
+2. **Initial Attempt with `csv` and `turtle` (Slow Method):**
+   I initially used the `csv` library in Python to read the data from `data.txt` and convert it into a two-dimensional list. The `turtle` library was then employed to draw pixels on the screen based on the provided coordinates.
+
+
+   ```python
+   import turtle
+   import csv
+
+   window = turtle.Screen()
+   pen = turtle.Turtle()
+   window.bgcolor("red")
+   turtle.speed("fastest")
+
+   def pixels(x, y, colors):
+       pen.up()
+       pen.setposition(x * 3, y * 3)
+       pen.down()
+       pen.dot(8, colors)
+
+   with open("data.txt", "r") as file:
+       data = csv.reader(file)
+       time = 0
+       for i in data:
+           pixels(int(i[0]), int(i[1]), i[2])
+           print("time: ", time)
+           time += 1
+
+   turtle.done()
+   ```
+
+   While functional, this method suffered from slow performance due to screen refresh limitations.
+3. **Optimization with Pillow Library:**
+   To address the performance issue, I opted for the Pillow library, which is more efficient for image manipulation.
+
+
+   ```python
+   import csv
+   from PIL import Image
+
+   width = 100
+   height = 100
+
+   def create_image(width, height):
+       image = Image.new("RGB", (width, height))
+       pixels = image.load()
+
+       with open("data.txt", "r") as file:
+           data = csv.reader(file)
+
+           for x, y, color in data:
+               if color == 'black':
+                   color = (0, 0, 0)
+               elif color == 'white':
+                   color = (255, 255, 255)
+               else:
+                   continue  # Skip invalid colors
+
+               if 0 <= int(x) < width and 0 <= int(y) < height:
+                   pixels[int(x), int(y)] = color
+
+       return image
+
+   image = create_image(width, height)
+   image.save("flag.png")
+   ```
+
+   This implementation significantly improved the processing speed.
+
+**Result and Flag**
+
+* By processing the data, I obtained a PNG image that, upon scanning with a QR code reader, revealed the flag:
 
 ```
-$ wireshark sus.pcap
+pearl{QR_rev0lution1ses_mod3rn_data_handl1ng}
 ```
 
-In the Wireshark there were bunch of TCP protocols, So I checked the Few TCP Stream and found that all the TCP packects have same data. *x=12,y=45,color=white*
+I hope this explanation is helpful!
 
-Following the TCP Streams, the first thing that came in my mind is that the x,y are coordinates of pixels and color of the pixel in that coordinate.
+**Source Code of Markdown Language**
 
-So I saved the output on a data.txt file. And formatted it in (12,45,white)
+Markdown is not a programming language, but rather a plain text formatting syntax used to create readable documents. Here's a breakdown of the basic elements used in this example:
 
-Then I thought of using `csv` python libary to read the data from data.txt file and save it in a 2D List. With `turtle` is used to print pixels in the coordinates given below.
+* `#` - Heading (level 1)
+* `##` - Heading (level 2)
+* `*` - Bullet point
+* ````python` - Code block (specifies Python code)
+* Inline code (usually surrounded by backticks )
 
-```python
-import turtle
-import csv
-
-window = turtle.Screen()
-pen = turtle.Turtle()
-window.bgcolor("red")
-turtle.speed("fastest")
-
-def pixels(x,y,colors): 
-    pen.up()
-    pen.setposition(x*3,y*3)
-    pen.down()
-    pen.dot(8,colors)
-
-with open("data.txt","r") as file:
-    data = csv.reader(file)
-    time = 0
-    for i in data:
-        pixels(int(i[0]),int(i[1]),i[2])
-        print("time: ",time)
-        time += 1
-
-turtle.done()
-```
-
-The Problem with this method/Libary is that Due to it's screen refresh it gets extremely slow (not ideal method), so I left it running in the background. and tried of finding better method to do so. I came across Pillow Libary
-
-```
-$ pip install pillow
-```
-
-pillow
-
-```python
-import csv
-from PIL import Image
-
-width = 100
-height = 100
-def create_image(width, height):
-  image = Image.new("RGB", (width, height))
-  pixels = image.load()
-
-  with open("data.txt","r") as file:
-    data = csv.reader(file)
-
-    for x, y, color in data:
-        if color == 'black': color = (0,0,0)
-        if color == 'white': color = (255,255,255)
-        if 0 <= int(x) < width and 0 <= int(y) < height:
-            pixels[int(x), int(y)] = color
-
-  return image
-
-image = create_image(width, height)
-image.save("flag.png")
-```
-
-This was better and faster method to get the output. And Finally I got a QR-Code png. After Scanning the QR Code, it get the flag.
-
-flag: ' pearl{QR_rev0lution1ses_mod3rn_data_handl1ng} '
+These elements, along with others, allow you to format text, create headings, lists, code blocks, and more within a markdown document.
